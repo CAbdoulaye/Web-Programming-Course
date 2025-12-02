@@ -7,6 +7,7 @@ function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
 
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -21,7 +22,7 @@ function Login() {
     try {
       // console.log(formData);
       // alert("Redirecting");
-      // navigate("/home");
+
       const res = await axios.post("http://localhost:8080/user/login", formData);
       alert(res.data.message);
       // store token if returned

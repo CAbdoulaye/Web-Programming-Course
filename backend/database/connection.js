@@ -9,4 +9,4 @@ const connection=mysql.createConnection({
 })
 
 
-export { connection };
+export { connection }; 

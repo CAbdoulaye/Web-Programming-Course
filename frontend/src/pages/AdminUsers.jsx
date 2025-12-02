@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 
 function AdminUsers() {
   const [users, setUsers] = useState([]);
+  const navigate = useNavigate();
+  
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const res = await axios.get("http://localhost:8080/user/");
         setUsers(res.data.result);
+        // if (!res.data.result.is_admin) {
+        //     alert("Not Admin")
+        //     navigate("/login"); // redirect admin
+        //   }
       } catch (err) {
         console.error(err);
         alert("Failed to fetch users");

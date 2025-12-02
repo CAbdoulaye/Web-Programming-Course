@@ -2,15 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "../contexts/UserContext.js";
 import { useNavigate } from "react-router-dom";
 
-
 function Home() {
   const { userEmail } = useUser();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const [user, setUser] = useState({ firstName: "", lastName: "", uin: "" });
+  const [user, setUser] = useState({ firstName: "", lastName: "", UIN: "" });
   const [message, setMessage] = useState("");
-  // console.log("userEmail");
-  // console.log(userEmail)
 
   useEffect(() => {
     if (userEmail) {
@@ -18,18 +15,16 @@ function Home() {
         .then((res) => res.json())
         .then((data) => {
           setUser(data);
-          // console.log("data.is_admin");
-          // console.log(data.is_admin);
           if (data.is_admin) {
-          navigate("/admin/users"); // redirect admin
-        }
-      }
-      )
+            navigate("/admin/users"); // redirect admin
+          }
+        })
         .catch(() => setMessage("Error loading profile"));
     }
   }, [userEmail]);
-    const handleUpdate = async (e) => {
-      try{
+
+  const handleUpdate = async (e) => {
+    try {
       e.preventDefault();
       const res = await fetch("http://localhost:8080/profile/update", {
         method: "PUT",
@@ -41,23 +36,28 @@ function Home() {
           uin: user.UIN,
         }),
       });
-      alert("profile updated successfully");
+      alert("Profile updated successfully");
     } catch (err) {
-      alert(err.response.data.message || "Login failed");
-    } 
+      alert(err.response?.data?.message || "Update failed");
+    }
   };
 
   const goToChangePassword = () => {
     navigate("/change-password");
   };
 
+  const goToAdvising = () => {
+    navigate("/advising");
+  };
+
   return (
     <div className="container">
       <h2>Welcome to your profile {user.u_first_name}</h2>
-      <button onClick={goToChangePassword}>
-        Change Password
+      <button onClick={goToChangePassword}>Change Password</button>
+      <button onClick={goToAdvising} style={{ marginLeft: "1rem" }}>
+        Go to Advising
       </button>
-      <form onSubmit={handleUpdate}>
+      <form onSubmit={handleUpdate} style={{ marginTop: "1rem" }}>
         <label>First Name</label>
         <input
           type="text"
@@ -87,8 +87,6 @@ function Home() {
       <p>{message}</p>
     </div>
   );
-};
+}
 
 export default Home;
-
-

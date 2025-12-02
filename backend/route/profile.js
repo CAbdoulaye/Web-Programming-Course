@@ -151,6 +151,26 @@ profile.post("/forgot-password/reset", async (req, res) => {
   }
 });
 
+// For advising portal help
+// Get user id (and maybe basic info) by email
+profile.get("/id/:email", async (req, res) => { 
+  try {
+    const [rows] = await connection.promise().query(
+      "SELECT u_ID, u_first_name, u_last_name FROM users WHERE u_email = ?",
+      [req.params.email]
+    );
+
+    if (rows.length === 0)
+      return res.status(404).json({ message: "User not found" });
+
+    res.json(rows[0]); // will return { id: ..., u_first_name: ..., u_last_name: ... }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 
 
 export default profile;
