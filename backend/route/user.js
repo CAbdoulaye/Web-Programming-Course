@@ -16,7 +16,7 @@ const user = Router();
 
 // Temporary store for 2FA codes
 const twoFACodes = {};
-
+ 
 
 
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET; // Set your secret in env
@@ -36,8 +36,8 @@ async function verifyRecaptcha(token, remoteip) {
 
 user.post("/login", async (req, res) => {
   const { email, password, recaptchaToken } = req.body;
-  console.log("recaptcha token:", recaptchaToken);
-
+  // console.log("recaptcha token:", recaptchaToken);
+ 
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
