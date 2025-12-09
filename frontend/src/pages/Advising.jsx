@@ -210,119 +210,158 @@ function Advising() {
       <h3>Your Advising Sheets</h3>
 
       {advisingSheets.length === 0 ? (
-        <p>No advising sheets found.</p>
-      ) : (
-        advisingSheets.map((sheet) => {
-          const isPending = sheet.status === "Pending";
-          return (
-            <div
-              key={sheet.advising_ID}
-              style={{ border: "1px solid gray", marginBottom: "1rem", padding: "1rem" }}
-            >
-              <h4>
-                Graduation Semester: {sheet.graduation_semester} — Status: {sheet.status}
-              </h4>
+  <p>No advising sheets found.</p>
+) : (
+  advisingSheets.map((sheet) => {
+    const isPending = sheet.status === "Pending";
+    const isEditing = editingSheetId === sheet.advising_ID;
 
-              {/* Editable only when pending */}
-              {isPending && (
-                <>
-                  <h5>Edit History Courses</h5>
-                  {courses.map((c) => (
-                    <div key={c.id}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={sheet.history.some((h) => h.id === c.id)}
-                          onChange={async (e) => {
-                            const checked = e.target.checked;
+    return (
+      <div
+        key={sheet.advising_ID}
+        style={{ border: "1px solid gray", marginBottom: "1rem", padding: "1rem" }}
+      >
+        {/* <h4>
+          Graduation Semester: {sheet.graduation_semester} — Status: {sheet.status}
+        </h4> */}
+        <h4>
+          Graduation Semester: {sheet.graduation_semester} — 
+          <span
+            style={{
+              color:
+                sheet.status === "Pending"
+                  ? "goldenrod"
+                  : sheet.status === "Approved"
+                  ? "green"
+                  : sheet.status === "Rejected"
+                  ? "red"
+                  : "black",
+              fontWeight: "bold",
+              marginLeft: "6px",
+            }}
+          >
+            {sheet.status}
+          </span>
+        </h4>
 
-                            let updated = sheet.history.map((h) => h.id);
-                            if (checked) {
-                              updated.push(c.id);
-                            } else {
-                              updated = updated.filter((id) => id !== c.id);
-                            }
 
-                            await fetch("http://localhost:8080/advising/history/add", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                advising_sheet_id: sheet.advising_ID,
-                                course_ids: updated,
-                              }),
-                            });
+        {/* EDIT BUTTON — only for pending */}
+        {isPending && !isEditing && (
+          <>
+            <button onClick={() => setEditingSheetId(sheet.advising_ID)}>
+              Edit
+            </button>
+            <br></br>
+          </>
+        )}
 
-                            loadSheets();
-                          }}
-                        />
-                        {c.course_code} — {c.course_name}
-                      </label>
-                    </div>
-                  ))}
+        {/* SAVE CHANGES BUTTON */}
+        {isEditing && (
+          <button onClick={() => setEditingSheetId(null)}>
+            Done
+          </button>
+        )}
 
-                  <h5 style={{ marginTop: "1rem" }}>Edit Planned Courses</h5>
-                  {courses.map((c) => (
-                    <div key={c.id}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={sheet.planned.some((p) => p.id === c.id)}
-                          onChange={async (e) => {
-                            const checked = e.target.checked;
+        {/* === EDIT MODE === */}
+        {isEditing && isPending && (
+          <>
+            <h5>Edit History Courses</h5>
+            {courses.map((c) => (
+              <div key={c.id}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={sheet.history.some((h) => h.id === c.id)}
+                    onChange={async (e) => {
+                      const checked = e.target.checked;
 
-                            let updated = sheet.planned.map((p) => p.id);
-                            if (checked) {
-                              updated.push(c.id);
-                            } else {
-                              updated = updated.filter((id) => id !== c.id);
-                            }
+                      let updated = sheet.history.map((h) => h.id);
+                      if (checked) {
+                        updated.push(c.id);
+                      } else {
+                        updated = updated.filter((id) => id !== c.id);
+                      }
 
-                            await fetch("http://localhost:8080/advising/planned/add", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                advising_sheet_id: sheet.advising_ID,
-                                course_ids: updated,
-                              }),
-                            });
+                      await fetch("http://localhost:8080/advising/history/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          advising_sheet_id: sheet.advising_ID,
+                          course_ids: updated,
+                        }),
+                      });
 
-                            loadSheets();
-                          }}
-                        />
-                        {c.course_code} — {c.course_name}
-                      </label>
-                    </div>
-                  ))}
-                </>
-              )}
+                      loadSheets();
+                    }}
+                  />
+                  {c.course_code} — {c.course_name}
+                </label>
+              </div>
+            ))}
 
-              {/* READ ONLY WHEN NOT PENDING */}
-              {!isPending && (
-                <>
-                  <strong>History Courses:</strong>
-                  <ul>
-                    {sheet.history.map((c) => (
-                      <li key={c.id}>{c.course_code} — {c.course_name}</li>
-                    ))}
-                  </ul>
+            <h5 style={{ marginTop: "1rem" }}>Edit Planned Courses</h5>
+            {courses.map((c) => (
+              <div key={c.id}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={sheet.planned.some((p) => p.id === c.id)}
+                    onChange={async (e) => {
+                      const checked = e.target.checked;
 
-                  <strong>Planned Courses:</strong>
-                  <ul>
-                    {sheet.planned.map((c) => (
-                      <li key={c.id}>{c.course_code} — {c.course_name}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
+                      let updated = sheet.planned.map((p) => p.id);
+                      if (checked) {
+                        updated.push(c.id);
+                      } else {
+                        updated = updated.filter((id) => id !== c.id);
+                      }
 
-              {sheet.admin_comment && (
-                <p style={{ color: "red" }}>Admin Comment: {sheet.admin_comment}</p>
-              )}
-            </div>
-          );
-        })
+                      await fetch("http://localhost:8080/advising/planned/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          advising_sheet_id: sheet.advising_ID,
+                          course_ids: updated,
+                        }),
+                      });
 
-      )}
+                      loadSheets();
+                    }}
+                  />
+                  {c.course_code} — {c.course_name}
+                </label>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* === READ ONLY MODE === */}
+        {!isEditing && (
+          <>
+            <strong>History Courses:</strong>
+            <ul>
+              {sheet.history.map((c) => (
+                <li key={c.id}>{c.course_code} — {c.course_name}</li>
+              ))}
+            </ul>
+
+            <strong>Planned Courses:</strong>
+            <ul>
+              {sheet.planned.map((c) => (
+                <li key={c.id}>{c.course_code} — {c.course_name}</li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {sheet.admin_comment && (
+          <p style={{ color: "red" }}>Admin Comment: {sheet.admin_comment}</p>
+        )}
+      </div>
+    );
+  })
+)}
+
 
 
       <p>{message}</p>

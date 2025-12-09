@@ -11,8 +11,7 @@ import { sendEmail } from "../utils/sendmail.js";
 import fetch from 'node-fetch'; // Add this import at the top if not already
 
 
-
-const user = Router();
+const user = Router(); 
 
 // Temporary store for 2FA codes
 const twoFACodes = {};
@@ -130,9 +129,7 @@ user.post("/login", async (req, res) => {
 //     res.status(500).json({ message: "Server error" });
 //   }
 // });
-  });
-
-
+});
 
 
 user.get("/", (req, res) => {

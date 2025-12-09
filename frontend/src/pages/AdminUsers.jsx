@@ -25,9 +25,16 @@ function AdminUsers() {
     fetchUsers();
   }, []);
 
+  const goToAdvising = () => {
+    navigate("/admin/advising");
+  };
+
   return (
     <div>
       <h2>ADMIN PORTAL: All Users</h2>
+      <button onClick={goToAdvising} style={{ marginLeft: "1rem" }}>
+        Go to Advising
+      </button>
       <table border="1" cellPadding="5" style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>

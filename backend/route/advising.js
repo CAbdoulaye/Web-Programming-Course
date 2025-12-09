@@ -1,5 +1,8 @@
 import { Router } from "express";
 import { connection } from "../database/connection.js";
+import { sendEmail } from "../utils/sendmail.js";
+
+
 
 const advising = Router();
 
@@ -212,13 +215,52 @@ advising.get("/admin/all", async (req, res) => {
   }
 });
 
+// /* ---------------------------------------------
+//    7. ADMIN: Approve sheet
+// -----------------------------------------------*/
+// advising.put("/admin/approve/:id", async (req, res) => {
+//   const advisingId = req.params.id;
+
+//   try {
+//     await connection
+//       .promise()
+//       .query(
+//         "UPDATE advising_sheets SET status='Approved', admin_comment=NULL WHERE advising_ID=?",
+//         [advisingId]
+//       );
+
+//     res.json({ message: "Sheet approved" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
 /* ---------------------------------------------
-   7. ADMIN: Approve sheet
+   7. ADMIN: Approve sheet (Sends Email)
 -----------------------------------------------*/
 advising.put("/admin/approve/:id", async (req, res) => {
   const advisingId = req.params.id;
 
   try {
+    // Get sheet + student info
+    const [rows] = await connection
+      .promise()
+      .query(
+        `SELECT asht.*, u.u_first_name, u.u_email
+         FROM advising_sheets asht
+         JOIN users u ON asht.student_id = u.u_ID
+         WHERE asht.advising_ID = ?`,
+        [advisingId]
+      );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Advising sheet not found" });
+    }
+
+    const sheet = rows[0];
+
+    // Update status
     await connection
       .promise()
       .query(
@@ -226,12 +268,27 @@ advising.put("/admin/approve/:id", async (req, res) => {
         [advisingId]
       );
 
-    res.json({ message: "Sheet approved" });
+    // ---- SEND APPROVAL EMAIL ----
+    const subject = "Your Advising Sheet Has Been Approved";
+
+    const htmlBody = `
+      <p>Hi ${sheet.u_first_name},</p>
+      <p>Your advising sheet for <strong>${sheet.graduation_semester}</strong> has been <strong>approved</strong>.</p>
+      <p>You may now proceed with your next steps.</p>
+      <br/>
+      <p>Regards,<br/>Your Advisor</p>
+    `;
+
+    sendEmail(sheet.u_email, subject, htmlBody);
+
+    res.json({ message: "Sheet approved and email sent" });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 /* ---------------------------------------------
    8. ADMIN: Reject sheet (with comment)
